@@ -21,10 +21,12 @@ WP_USER         — WordPress ユーザー名
 WP_APP_PASSWORD — アプリケーションパスワード
 ```
 
+認証ファイル: `~/.wp_credentials`（`source` して使う）
+
 環境変数が未設定の場合のみユーザーに聞く:
 1. https://koseidaimon.com/wp-admin/ → ユーザー → プロフィール
-2. 「アプリケーションパスワード」でパスワードを発行
-3. `~/.bashrc` に `export WP_USER=...` / `export WP_APP_PASSWORD=...` を追記
+2. 「アプリケーションパスワード」でパスワードを発行（スペース除去して保存）
+3. `~/.wp_credentials` に `export WP_USER=...` / `export WP_APP_PASSWORD=...` を書く
 
 ### 2. カテゴリの確認
 
@@ -36,10 +38,14 @@ curl -s "https://koseidaimon.com/wp-json/wp/v2/categories?per_page=50" -u "$WP_U
 
 ### 3. アイキャッチ画像の生成 & アップロード
 
-スキルディレクトリの `generate-ogp.mjs` でアイキャッチを自動生成する。
+Puppeteer で HTML/CSS テンプレートからアイキャッチを自動生成する。
+テンプレート: `~/.claude/skills/blog-post/ogp-template.html`
 
 ```bash
-# 画像生成（1200x630 PNG）
+# 認証読み込み
+source ~/.wp_credentials
+
+# 画像生成（1200x630 Retina PNG）
 node ~/.claude/skills/blog-post/generate-ogp.mjs "記事タイトル" "カテゴリ名" "/tmp/ogp.png"
 
 # WordPress メディアライブラリにアップロード
