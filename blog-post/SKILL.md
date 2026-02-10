@@ -14,24 +14,33 @@ koseidaimon.com に、こうせいの文体で技術ブログ記事を下書き�
 
 ### 1. 認証情報
 
-環境変数から読み取る（毎回入力不要）。
+認証ファイル: `~/.wp_credentials`（`user:password` の1行形式）
 
 ```
-WP_USER         — WordPress ユーザー名
-WP_APP_PASSWORD — アプリケーションパスワード
+koseidaimon:XXXXXXXX
 ```
 
-認証ファイル: `~/.wp_credentials`（`source` して使う）
+全 API 呼び出しで以下のパターンを使う（`source` は使わない）:
 
-環境変数が未設定の場合のみユーザーに聞く:
+```bash
+curl -s -u "$(cat ~/.wp_credentials)" "https://koseidaimon.com/wp-json/wp/v2/..."
+```
+
+ファイルが存在しない場合のみユーザーに聞く:
 1. https://koseidaimon.com/wp-admin/ → ユーザー → プロフィール
-2. 「アプリケーションパスワード」でパスワードを発行（スペース除去して保存）
-3. `~/.wp_credentials` に `export WP_USER=...` / `export WP_APP_PASSWORD=...` を書く
+2. 「アプリケーションパスワード」でパスワードを発行（スペース除去）
+3. `~/.wp_credentials` に `ユーザー名:パスワード` の1行で保存
+
+**認証チェック**（最初に必ず実行）:
+```bash
+curl -s -o /dev/null -w "%{http_code}" "https://koseidaimon.com/wp-json/wp/v2/users/me" -u "$(cat ~/.wp_credentials)"
+# → 200 なら OK。401 ならパスワードを確認
+```
 
 ### 2. カテゴリの確認
 
 ```bash
-curl -s "https://koseidaimon.com/wp-json/wp/v2/categories?per_page=50" -u "$WP_USER:$WP_APP_PASSWORD"
+curl -s "https://koseidaimon.com/wp-json/wp/v2/categories?per_page=50" -u "$(cat ~/.wp_credentials)"
 ```
 
 既存カテゴリ: Cursor(8), HTML/CSS(2), JavaScript(3), PHP(4), Shell(7), Snippets(6), WordPress(5)
@@ -42,15 +51,12 @@ Puppeteer で HTML/CSS テンプレートからアイキャッチを自動生成
 テンプレート: `~/.claude/skills/blog-post/ogp-template.html`
 
 ```bash
-# 認証読み込み
-source ~/.wp_credentials
-
 # 画像生成（1200x630 Retina PNG）
 node ~/.claude/skills/blog-post/generate-ogp.mjs "記事タイトル" "カテゴリ名" "/tmp/ogp.png"
 
 # WordPress メディアライブラリにアップロード
 curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/media" \
-  -u "$WP_USER:$WP_APP_PASSWORD" \
+  -u "$(cat ~/.wp_credentials)" \
   -H "Content-Disposition: attachment; filename=ogp-SLUG.png" \
   -H "Content-Type: image/png" \
   --data-binary @/tmp/ogp.png
@@ -66,7 +72,7 @@ curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/media" \
 
 ```bash
 curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/posts" \
-  -u "$WP_USER:$WP_APP_PASSWORD" \
+  -u "$(cat ~/.wp_credentials)" \
   -H "Content-Type: application/json" \
   -d @post.json
 ```
@@ -88,9 +94,8 @@ curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/posts" \
 ### 7. 公開
 
 ```bash
-source ~/.wp_credentials
 curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/posts/POST_ID" \
-  -u "$WP_USER:$WP_APP_PASSWORD" \
+  -u "$(cat ~/.wp_credentials)" \
   -H "Content-Type: application/json" \
   -d '{"status":"publish"}'
 ```
@@ -158,10 +163,25 @@ https://x.com/intent/tweet?text=エンコード済みテキスト&url=エンコ�
 - ❌ 「〜と言えるでしょう」
 - ❌ 過剰な丁寧語の連続
 
+## API 呼び出しルール
+
+- 認証は必ず `-u "$(cat ~/.wp_credentials)"` を使う（`source` や環境変数は使わない）
+- **最初の API 呼び出し前に認証チェック**（`users/me` で 200 確認）を行う
+- レスポンスは必ずエラーチェックしてからパースする:
+  ```python
+  # ❌ Bad: KeyError で落ちる
+  d['id']
+  # ✅ Good: エラーレスポンスを先にチェック
+  if 'code' in d: print(f"Error: {d['message']}")
+  else: print(d['id'])
+  ```
+- エラー時はレスポンス本文を確認して原因を特定してからリトライ
+
 ## アンチパターン
 
 - ❌ status を `publish` にする → 必ず `draft`
-- ❌ 認証情報をファイルに残す → 一時ファイルは即削除
+- ❌ `source ~/.wp_credentials` で環境変数経由の認証 → `$(cat ~/.wp_credentials)` を使う
 - ❌ AI っぽいフォーマルな文体で書く
 - ❌ カテゴリを確認せずに投稿する
 - ❌ ブロックコメント（`<!-- wp:xxx -->`）なしの生 HTML で投稿する
+- ❌ API レスポンスを `d['key']` でパース → `d.get('key')` またはエラーチェック後にアクセス
