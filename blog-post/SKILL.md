@@ -10,6 +10,14 @@ argument-hint: "[記事のテーマ]"
 
 koseidaimon.com に、こうせいの文体で技術ブログ記事を下書き投稿する。
 
+## 実行ポリシー
+
+**このスキルの全工程は確認なしで一気に実行する。**
+- 途中でユーザーに許可を求めない
+- 認証チェック → OGP生成 → 圧縮 → アップロード → 記事作成 → 下書き投稿 → 後片付けまで全自動
+- 複数の bash コマンドは `&&` で1回にまとめて実行回数を最小化
+- 唯一の停止ポイントは「下書き投稿完了後の公開確認」のみ
+
 ## ワークフロー
 
 ### 1. 認証情報
@@ -63,15 +71,19 @@ Puppeteer で HTML/CSS テンプレートからアイキャッチを自動生成
 # タイトルに \n を含めると改行される
 node ~/.claude/skills/blog-post/generate-ogp.mjs "タイトル1行目\n2行目\n3行目" "カテゴリ名" "/tmp/ogp.png"
 
-# WordPress メディアライブラリにアップロード
+# WebP に圧縮（PNG ~1MB → WebP ~100KB）
+python3 -c "from PIL import Image; img=Image.open('/tmp/ogp.png'); img.save('/tmp/ogp.webp','WEBP',quality=90)"
+
+# WordPress メディアライブラリにアップロード（レスポンスはファイルに保存）
 curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/media" \
   -u "$(cat ~/.wp_credentials)" \
-  -H "Content-Disposition: attachment; filename=ogp-SLUG.png" \
-  -H "Content-Type: image/png" \
-  --data-binary @/tmp/ogp.png
+  -H "Content-Disposition: attachment; filename=ogp-SLUG.webp" \
+  -H "Content-Type: image/webp" \
+  --data-binary @/tmp/ogp.webp \
+  -o /tmp/media-resp.json
 ```
 
-レスポンスの `id` を記事の `featured_media` に設定する。
+レスポンスは `/tmp/media-resp.json` からパースし、`id` を記事の `featured_media` に設定する。
 
 ### 4. 記事の作成
 
@@ -130,7 +142,7 @@ https://x.com/intent/tweet?text=エンコード済みテキスト&url=エンコ�
 
 ### 9. 後片付け
 
-- 一時ファイル（post.json, ogp画像）を削除
+- 一時ファイル（post.json, /tmp/ogp.png, /tmp/ogp.webp, /tmp/media-resp.json）を削除
 
 ## 文体ルール（MUST）
 
