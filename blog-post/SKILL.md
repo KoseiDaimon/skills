@@ -34,11 +34,29 @@ curl -s "https://koseidaimon.com/wp-json/wp/v2/categories?per_page=50" -u "USER:
 
 既存カテゴリ: Cursor(8), HTML/CSS(2), JavaScript(3), PHP(4), Shell(7), Snippets(6), WordPress(5)
 
-### 3. 記事の作成
+### 3. アイキャッチ画像の生成 & アップロード
+
+スキルディレクトリの `generate-ogp.mjs` でアイキャッチを自動生成する。
+
+```bash
+# 画像生成（1200x630 PNG）
+node ~/.claude/skills/blog-post/generate-ogp.mjs "記事タイトル" "カテゴリ名" "/tmp/ogp.png"
+
+# WordPress メディアライブラリにアップロード
+curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/media" \
+  -u "USER:PASS" \
+  -H "Content-Disposition: attachment; filename=ogp-SLUG.png" \
+  -H "Content-Type: image/png" \
+  --data-binary @/tmp/ogp.png
+```
+
+レスポンスの `id` を記事の `featured_media` に設定する。
+
+### 4. 記事の作成
 
 下記の文体ルールに従って記事コンテンツを作成し、WordPress ブロック形式（`<!-- wp:xxx -->` コメント付き）で組み立てる。
 
-### 4. REST API で下書き投稿
+### 5. REST API で下書き投稿
 
 ```bash
 curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/posts" \
@@ -48,9 +66,10 @@ curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/posts" \
 ```
 
 - **status は必ず `draft`** にする（いきなり公開しない）
+- `featured_media` にステップ3でアップロードした画像の ID を設定
 - 投稿後、編集画面の URL を返す
 
-### 5. 後片付け
+### 6. 後片付け
 
 - 一時ファイルを削除
 - 「アプリケーションパスワードを取り消してください」と案内
