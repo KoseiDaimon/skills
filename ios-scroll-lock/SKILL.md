@@ -1,18 +1,20 @@
 ---
 name: ios-scroll-lock
 description: >
-  モーダル・オーバーレイ表示時のスクロールロックを iOS Safari 対応で実装する。
+  モーダル・オーバーレイ表示時のスクロールロックを iOS 全ブラウザ対応で実装する。
   overflow:hidden だけでは iOS でスクロールが止まらない問題の解決策。
   「モーダルのスクロールロック」「iOS でスクロールできてしまう」「背景スクロール防止」と言われた時に使用する。
 ---
 
 ## 目的
 
-モーダル表示中の背景スクロールを iOS Safari を含む全ブラウザで確実に防止する。
+モーダル表示中の背景スクロールを iOS 全ブラウザで確実に防止する。
 
 ## 背景
 
-iOS Safari は `overflow: hidden` をタッチスクロールに適用しない（WebKit Bug #153852）。
+iOS 上の全ブラウザ（Safari・Chrome・Firefox・Edge 等）は Apple の制約により WebKit エンジンを使用する。
+WebKit は `overflow: hidden` をタッチスクロールに適用しない（WebKit Bug #153852）。
+そのため Safari に限らず iOS 上の全ブラウザで発生する。
 `position: fixed` で body を固定し、物理的にスクロール対象をなくす方式が必要。
 
 ## 実装パターン
