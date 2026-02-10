@@ -21,6 +21,7 @@ Claude Code のプロジェクトルール・スキルを設計・追記・編�
 
 要望に関連するスキル・ルールが既に存在するか確認する：
 
+- `~/.claude/plugins/local/wp-toolkit/skills/` （WP系スキル・プラグイン）
 - `~/.claude/skills/` （個人スキル）
 - `.claude/skills/` （プロジェクトスキル）
 - `CLAUDE.md` / `*_RULES.md`
@@ -73,21 +74,21 @@ Claude Code のプロジェクトルール・スキルを設計・追記・編�
 
 ### 2-B. スキルのスコープ判断
 
-Skills の場合、個人 vs プロジェクトを判断する。
+Skills の場合、配置先を判断する。
 **おすすめを提案した上で、ユーザーに確認すること。**
 
 判断基準：
 
-| 条件 | おすすめ | 配置先 |
-|------|---------|--------|
-| 他案件でも使う | 個人スキル | `~/.claude/skills/<name>/SKILL.md` |
-| このプロジェクト固有だがチーム共有したい | プロジェクトスキル | `.claude/skills/<name>/SKILL.md`（Git管理下） |
-| このプロジェクト固有で自分だけ | プロジェクトスキル | 同上 |
+| 条件 | おすすめ | 配置先 | Git リポジトリ |
+|------|---------|--------|---------------|
+| WordPress 関連 | WP Toolkit プラグイン | `~/.claude/plugins/local/wp-toolkit/skills/<name>/SKILL.md` | `dai-works/wp-toolkit` |
+| WP以外で他案件でも使う | 個人スキル | `~/.claude/skills/<name>/SKILL.md` | `KoseiDaimon/skills` |
+| このプロジェクト固有 | プロジェクトスキル | `.claude/skills/<name>/SKILL.md`（プロジェクトGit管理下） | プロジェクトリポジトリ |
 
 提案の例：
-> 「これは WordPress 案件全般で使えそうなので、個人スキル（`~/.claude/skills/`）がおすすめですが、どうしますか？」
+> 「これは WordPress 関連なので、wp-toolkit プラグイン（`~/.claude/plugins/local/wp-toolkit/skills/`）に配置しますが、よいですか？」
 
-**個人スキルを選んだ場合の汎用化ポイント:**
+**共有スキル（WP Toolkit / 個人）の汎用化ポイント:**
 - パス: プロジェクト固有値を埋め込まず、作業ディレクトリから自動推定
 - サポートファイル: スキルディレクトリ内に同梱し、`docker compose cp` 等で転送
 - 命名: プロジェクト名を含めない（`suntrinity-test-post` ではなく `test-post`）
@@ -100,6 +101,20 @@ Skills の場合、個人 vs プロジェクトを判断する。
 
 - 既存ルールとの矛盾がないか確認
 - 配置先ファイルが肥大化しないか確認
+
+### 5. Git コミット＆プッシュ
+
+スキル作成・編集後、対象リポジトリに commit & push する。
+
+| 配置先 | ディレクトリ | リモート |
+|--------|------------|---------|
+| WP Toolkit | `~/.claude/plugins/local/wp-toolkit/` | `origin`（dai-works/wp-toolkit） |
+| 個人スキル | `~/.claude/skills/` | `origin`（KoseiDaimon/skills） |
+| プロジェクト | `.claude/skills/` | プロジェクトのリモート |
+
+手順：
+1. 対象ディレクトリで `git add` → `git commit` → `git push`
+2. コミットメッセージ: `feat: add <skill-name>` または `fix: update <skill-name>`
 
 ---
 
