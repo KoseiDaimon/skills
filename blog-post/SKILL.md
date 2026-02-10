@@ -12,24 +12,24 @@ koseidaimon.com に、こうせいの文体で技術ブログ記事を下書き�
 
 ## ワークフロー
 
-### 1. 認証情報の取得
+### 1. 認証情報
 
-アプリケーションパスワードをユーザーに聞く。
+環境変数から読み取る（毎回入力不要）。
 
 ```
-サイト: https://koseidaimon.com
-認証: WordPress アプリケーションパスワード（Basic Auth）
+WP_USER         — WordPress ユーザー名
+WP_APP_PASSWORD — アプリケーションパスワード
 ```
 
-手順の案内:
+環境変数が未設定の場合のみユーザーに聞く:
 1. https://koseidaimon.com/wp-admin/ → ユーザー → プロフィール
 2. 「アプリケーションパスワード」でパスワードを発行
-3. ユーザー名とパスワードを受け取る
+3. `~/.bashrc` に `export WP_USER=...` / `export WP_APP_PASSWORD=...` を追記
 
 ### 2. カテゴリの確認
 
 ```bash
-curl -s "https://koseidaimon.com/wp-json/wp/v2/categories?per_page=50" -u "USER:PASS"
+curl -s "https://koseidaimon.com/wp-json/wp/v2/categories?per_page=50" -u "$WP_USER:$WP_APP_PASSWORD"
 ```
 
 既存カテゴリ: Cursor(8), HTML/CSS(2), JavaScript(3), PHP(4), Shell(7), Snippets(6), WordPress(5)
@@ -44,7 +44,7 @@ node ~/.claude/skills/blog-post/generate-ogp.mjs "記事タイトル" "カテゴ
 
 # WordPress メディアライブラリにアップロード
 curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/media" \
-  -u "USER:PASS" \
+  -u "$WP_USER:$WP_APP_PASSWORD" \
   -H "Content-Disposition: attachment; filename=ogp-SLUG.png" \
   -H "Content-Type: image/png" \
   --data-binary @/tmp/ogp.png
@@ -60,7 +60,7 @@ curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/media" \
 
 ```bash
 curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/posts" \
-  -u "USER:PASS" \
+  -u "$WP_USER:$WP_APP_PASSWORD" \
   -H "Content-Type: application/json" \
   -d @post.json
 ```
@@ -71,8 +71,7 @@ curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/posts" \
 
 ### 6. 後片付け
 
-- 一時ファイルを削除
-- 「アプリケーションパスワードを取り消してください」と案内
+- 一時ファイル（post.json, ogp画像）を削除
 
 ## 文体ルール（MUST）
 
