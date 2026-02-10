@@ -119,10 +119,9 @@
     const title = params.get('title') || '';
     const category = params.get('category') || '';
 
-    // 禁則処理: 行頭禁止文字の前にワードジョイナー(U+2060)を挿入
-    const noStart = /([！？!?）】」』〉》〕｝、。，．・：；ー～…])/g;
-    const processed = title.replace(noStart, '\u2060$1');
-    document.getElementById('title').textContent = processed;
+    // タイトル内の \n を <br> に変換して表示
+    const titleEl = document.getElementById('title');
+    titleEl.innerHTML = title.replace(/\n/g, '<br>');
 
     const catEl = document.getElementById('category');
     if (category) {
@@ -134,13 +133,13 @@
     // タイトルの長さに応じてフォントサイズ調整
     const len = title.length;
     let fontSize;
-    if (len <= 12)      fontSize = 80;
-    else if (len <= 18) fontSize = 68;
-    else if (len <= 25) fontSize = 60;
-    else if (len <= 35) fontSize = 52;
-    else                fontSize = 44;
+    if (len <= 15)      fontSize = 72;
+    else if (len <= 20) fontSize = 64;
+    else if (len <= 28) fontSize = 56;
+    else if (len <= 38) fontSize = 48;
+    else                fontSize = 42;
 
-    document.getElementById('title').style.fontSize = fontSize + 'px';
+    titleEl.style.fontSize = fontSize + 'px';
   </script>
 </body>
 </html>

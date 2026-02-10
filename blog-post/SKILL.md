@@ -50,9 +50,18 @@ curl -s "https://koseidaimon.com/wp-json/wp/v2/categories?per_page=50" -u "$(cat
 Puppeteer で HTML/CSS テンプレートからアイキャッチを自動生成する。
 テンプレート: `~/.claude/skills/blog-post/ogp-template.html`
 
+タイトルの改行位置は AI が文脈を読んで決める。`\n` を含めて渡すと `<br>` に変換される。
+
+改行ルール:
+- 助詞（で、が、に、を、は等）の後で切る
+- 「」【】のペアは中で切らない（開き括弧の前 or 閉じ括弧の後で改行）
+- 各行が均等な長さになるよう調整
+- 例: `"【WordPress】スマイルサーバーで\n「チェックサムが一致しません」\nエラーが出た時の対処法"`
+
 ```bash
 # 画像生成（1200x630 Retina PNG）
-node ~/.claude/skills/blog-post/generate-ogp.mjs "記事タイトル" "カテゴリ名" "/tmp/ogp.png"
+# タイトルに \n を含めると改行される
+node ~/.claude/skills/blog-post/generate-ogp.mjs "タイトル1行目\n2行目\n3行目" "カテゴリ名" "/tmp/ogp.png"
 
 # WordPress メディアライブラリにアップロード
 curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/media" \
