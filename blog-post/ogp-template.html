@@ -119,7 +119,10 @@
     const title = params.get('title') || '';
     const category = params.get('category') || '';
 
-    document.getElementById('title').textContent = title;
+    // 禁則処理: 行頭禁止文字の前にワードジョイナー(U+2060)を挿入
+    const noStart = /([！？!?）】」』〉》〕｝、。，．・：；ー～…])/g;
+    const processed = title.replace(noStart, '\u2060$1');
+    document.getElementById('title').textContent = processed;
 
     const catEl = document.getElementById('category');
     if (category) {
