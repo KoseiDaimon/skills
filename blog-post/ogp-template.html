@@ -15,7 +15,6 @@
     position: relative;
     background: linear-gradient(135deg, #04384c 0%, #065a6e 35%, #0a7e8c 65%, #4dbdcf 100%);
     line-break: strict;
-    word-break: keep-all;
     overflow-wrap: break-word;
   }
 
@@ -132,11 +131,11 @@
     // タイトルの長さに応じてフォントサイズ調整
     const len = title.length;
     let fontSize;
-    if (len <= 15)      fontSize = 72;
-    else if (len <= 20) fontSize = 64;
-    else if (len <= 28) fontSize = 56;
-    else if (len <= 38) fontSize = 46;
-    else                fontSize = 40;
+    if (len <= 12)      fontSize = 80;
+    else if (len <= 18) fontSize = 68;
+    else if (len <= 25) fontSize = 60;
+    else if (len <= 35) fontSize = 52;
+    else                fontSize = 44;
 
     document.getElementById('title').style.fontSize = fontSize + 'px';
   </script>
