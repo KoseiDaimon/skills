@@ -12,7 +12,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const title = process.argv[2];
+const title = (process.argv[2] || "").replace(/\\n/g, "\n");
 const category = process.argv[3] || "";
 const outputPath = process.argv[4] || "/tmp/ogp.png";
 
