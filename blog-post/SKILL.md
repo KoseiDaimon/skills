@@ -55,10 +55,9 @@ curl -s "https://koseidaimon.com/wp-json/wp/v2/categories?per_page=50" -u "$(cat
 
 ### 3. アイキャッチ画像の生成 & アップロード
 
-Puppeteer で HTML/CSS テンプレートからアイキャッチを自動生成する。
-テンプレート: `~/.claude/skills/blog-post/ogp-template.html`
+satori + resvg-js でアイキャッチを自動生成する（Puppeteer 不要、ブラウザ起動なし）。
 
-タイトルの改行位置は AI が文脈を読んで決める。`\n` を含めて渡すと `<br>` に変換される。
+タイトルの改行位置は AI が文脈を読んで決める。`\n` を含めて渡すと改行される。
 
 改行ルール:
 - 助詞（で、が、に、を、は等）の後で切る
@@ -67,11 +66,10 @@ Puppeteer で HTML/CSS テンプレートからアイキャッチを自動生成
 - 例: `"【WordPress】スマイルサーバーで\n「チェックサムが一致しません」\nエラーが出た時の対処法"`
 
 ```bash
-# 画像生成（1200x630 Retina PNG）
-# タイトルに \n を含めると改行される
+# 画像生成（1200x630 Retina 2x PNG）
 node ~/.claude/skills/blog-post/generate-ogp.mjs "タイトル1行目\n2行目\n3行目" "カテゴリ名" "/tmp/ogp.png"
 
-# WebP に圧縮（PNG ~1MB → WebP ~100KB）
+# WebP に圧縮（PNG → WebP ~70KB）
 python3 -c "from PIL import Image; img=Image.open('/tmp/ogp.png'); img.save('/tmp/ogp.webp','WEBP',quality=90)"
 
 # WordPress メディアライブラリにアップロード（レスポンスはファイルに保存）

@@ -11,6 +11,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "puppeteer": "^24.37.2"
+    "@resvg/resvg-js": "^2.6.2",
+    "satori": "^0.19.2"
   }
 }
