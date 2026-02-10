@@ -72,6 +72,7 @@ curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/posts" \
 ```
 
 - **status は必ず `draft`** にする（いきなり公開しない）
+- **slug は英語のケバブケースで設定する**（例: `ios-modal-scroll-lock-fix`）
 - `featured_media` にステップ3でアップロードした画像の ID を設定
 - 投稿後、編集画面の URL を返す
 
