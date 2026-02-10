@@ -76,7 +76,45 @@ curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/posts" \
 - `featured_media` にステップ3でアップロードした画像の ID を設定
 - 投稿後、編集画面の URL を返す
 
-### 6. 後片付け
+### 6. 公開確認
+
+下書き投稿後、ユーザーに確認する:
+
+> 「下書き投稿しました！ → [編集画面URL]
+> 確認して問題なければ公開しますか？」
+
+**ユーザーが公開を承認した場合のみ**、ステップ7・8に進む。
+
+### 7. 公開
+
+```bash
+source ~/.wp_credentials
+curl -s -X POST "https://koseidaimon.com/wp-json/wp/v2/posts/POST_ID" \
+  -u "$WP_USER:$WP_APP_PASSWORD" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"publish"}'
+```
+
+### 8. X（Twitter）シェア
+
+公開後、ツイート用の compose URL を生成してユーザーに提示する。
+
+```
+https://x.com/intent/tweet?text=エンコード済みテキスト&url=エンコード済み記事URL
+```
+
+ツイート文テンプレート:
+```
+記事タイトル（短縮可）
+記事URL
+#関連ハッシュタグ
+```
+
+- text と url はそれぞれ `encodeURIComponent` でエンコード
+- ハッシュタグはカテゴリに応じて自動付与（例: JavaScript → #JavaScript #Web開発）
+- ユーザーがクリックするだけで投稿画面が開く
+
+### 9. 後片付け
 
 - 一時ファイル（post.json, ogp画像）を削除
 
